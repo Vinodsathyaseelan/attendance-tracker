@@ -356,7 +356,8 @@ function exportToExcel() {
   worksheetData.push(['Date', 'Day', 'Status'])
 
   Object.keys(attendanceData.value).sort().forEach(dateKey => {
-    const date = new Date(dateKey)
+    const [year, month, day] = dateKey.split('-').map(Number)
+    const date = new Date(year, month - 1, day)
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     const status = attendanceData.value[dateKey]
     const statusLabel = statusTypes.find(s => s.value === status)?.label || status
