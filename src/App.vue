@@ -130,7 +130,7 @@
     </el-container>
 
     <el-dialog v-model="statusDialogVisible" title="Update Attendance" width="300px">
-      <el-select v-model="selectedStatus" placeholder="Select status" style="width: 100%">
+      <el-select v-model="selectedStatus" placeholder="Select status" style="width: 100%" clearable>
         <el-option
           v-for="status in statusTypes"
           :key="status.value"
@@ -145,6 +145,7 @@
       </el-select>
       <template #footer>
         <el-button @click="statusDialogVisible = false">Cancel</el-button>
+        <el-button type="danger" @click="clearStatus" v-if="selectedStatus">Clear</el-button>
         <el-button type="primary" @click="saveStatus">Save</el-button>
       </template>
     </el-dialog>
@@ -323,6 +324,16 @@ function saveStatus() {
     const dateKey = selectedDay.value.date.toISOString().split('T')[0]
     attendanceData.value[dateKey] = selectedStatus.value
     saveAttendanceData()
+    statusDialogVisible.value = false
+  }
+}
+
+function clearStatus() {
+  if (selectedDay.value) {
+    const dateKey = selectedDay.value.date.toISOString().split('T')[0]
+    delete attendanceData.value[dateKey]
+    saveAttendanceData()
+    selectedStatus.value = ''
     statusDialogVisible.value = false
   }
 }
