@@ -28,26 +28,54 @@
         </div>
       </el-header>
 
-      <el-header class="compliance-header">
-        <div class="compliance-item">
-          <span class="compliance-label">Q1 Compliance:</span>
-          <span class="compliance-value" :class="getComplianceClass(0)">{{ getComplianceStatus(0) }}</span>
-        </div>
-        <div class="compliance-item">
-          <span class="compliance-label">Q2 Compliance:</span>
-          <span class="compliance-value" :class="getComplianceClass(1)">{{ getComplianceStatus(1) }}</span>
-        </div>
-        <div class="compliance-item">
-          <span class="compliance-label">Q3 Compliance:</span>
-          <span class="compliance-value" :class="getComplianceClass(2)">{{ getComplianceStatus(2) }}</span>
-        </div>
-        <div class="compliance-item">
-          <span class="compliance-label">Q4 Compliance:</span>
-          <span class="compliance-value" :class="getComplianceClass(3)">{{ getComplianceStatus(3) }}</span>
-        </div>
-      </el-header>
-
       <el-main>
+        <div class="compliance-cards">
+          <div class="compliance-card" :class="getComplianceCardClass(0)">
+            <div class="card-header">
+              <h3>Q1 Compliance</h3>
+              <div class="card-icon" :style="{ color: getComplianceIconColor(0) }">
+                <SuccessFilled v-if="getComplianceStatus(0) !== 'Not Available' && getComplianceStatus(0).includes('Compliant')" />
+                <CircleCloseFilled v-else-if="getComplianceStatus(0) !== 'Not Available'" />
+                <QuestionFilled v-else />
+              </div>
+            </div>
+            <div class="card-value">{{ getComplianceStatus(0) }}</div>
+          </div>
+          <div class="compliance-card" :class="getComplianceCardClass(1)">
+            <div class="card-header">
+              <h3>Q2 Compliance</h3>
+              <div class="card-icon" :style="{ color: getComplianceIconColor(1) }">
+                <SuccessFilled v-if="getComplianceStatus(1) !== 'Not Available' && getComplianceStatus(1).includes('Compliant')" />
+                <CircleCloseFilled v-else-if="getComplianceStatus(1) !== 'Not Available'" />
+                <QuestionFilled v-else />
+              </div>
+            </div>
+            <div class="card-value">{{ getComplianceStatus(1) }}</div>
+          </div>
+          <div class="compliance-card" :class="getComplianceCardClass(2)">
+            <div class="card-header">
+              <h3>Q3 Compliance</h3>
+              <div class="card-icon" :style="{ color: getComplianceIconColor(2) }">
+                <SuccessFilled v-if="getComplianceStatus(2) !== 'Not Available' && getComplianceStatus(2).includes('Compliant')" />
+                <CircleCloseFilled v-else-if="getComplianceStatus(2) !== 'Not Available'" />
+                <QuestionFilled v-else />
+              </div>
+            </div>
+            <div class="card-value">{{ getComplianceStatus(2) }}</div>
+          </div>
+          <div class="compliance-card" :class="getComplianceCardClass(3)">
+            <div class="card-header">
+              <h3>Q4 Compliance</h3>
+              <div class="card-icon" :style="{ color: getComplianceIconColor(3) }">
+                <SuccessFilled v-if="getComplianceStatus(3) !== 'Not Available' && getComplianceStatus(3).includes('Compliant')" />
+                <CircleCloseFilled v-else-if="getComplianceStatus(3) !== 'Not Available'" />
+                <QuestionFilled v-else />
+              </div>
+            </div>
+            <div class="card-value">{{ getComplianceStatus(3) }}</div>
+          </div>
+        </div>
+
         <div class="status-legend">
           <span class="legend-item" v-for="status in statusTypes" :key="status.value">
             <span class="legend-color" :style="{ backgroundColor: status.color }"></span>
@@ -125,7 +153,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Download, Upload } from '@element-plus/icons-vue'
+import { Download, Upload, SuccessFilled, CircleCloseFilled, QuestionFilled } from '@element-plus/icons-vue'
 import * as XLSX from 'xlsx'
 
 const statusTypes = [
@@ -441,6 +469,48 @@ function getComplianceClass(quarterIndex) {
   return 'not-compliant'
 }
 
+function getComplianceCardClass(quarterIndex) {
+  const status = getComplianceStatus(quarterIndex)
+  
+  if (status === 'Not Available') {
+    return 'card-na'
+  }
+  
+  if (status.includes('Compliant')) {
+    return 'card-compliant'
+  }
+  
+  return 'card-not-compliant'
+}
+
+function getComplianceIcon(quarterIndex) {
+  const status = getComplianceStatus(quarterIndex)
+  
+  if (status === 'Not Available') {
+    return QuestionFilled
+  }
+  
+  if (status.includes('Compliant')) {
+    return SuccessFilled
+  }
+  
+  return CircleCloseFilled
+}
+
+function getComplianceIconColor(quarterIndex) {
+  const status = getComplianceStatus(quarterIndex)
+  
+  if (status === 'Not Available') {
+    return '#909399'
+  }
+  
+  if (status.includes('Compliant')) {
+    return '#67c23a'
+  }
+  
+  return '#f56c6c'
+}
+
 onMounted(() => {
   loadAttendanceData()
 })
@@ -472,52 +542,79 @@ onMounted(() => {
   align-items: center;
 }
 
-.compliance-header {
-  background: #fff;
-  border-top: 1px solid #ebeef5;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 15px 20px;
-  height: auto;
-}
-
-.compliance-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.compliance-label {
-  font-size: 14px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.compliance-value {
-  font-size: 16px;
-  font-weight: bold;
-  padding: 4px 12px;
-  border-radius: 4px;
-}
-
-.compliance-na {
-  color: #909399;
-  background: #f4f4f5;
-}
-
-.compliant {
-  color: #67c23a;
-  background: #f0f9ff;
-}
-
-.not-compliant {
-  color: #f56c6c;
-  background: #fef0f0;
-}
-
 .el-main {
   padding: 20px;
+}
+
+.compliance-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.compliance-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  border-left: 4px solid #dcdfe6;
+}
+
+.compliance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #303133;
+  font-weight: 600;
+}
+
+.card-icon {
+  font-size: 24px;
+}
+
+.card-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #606266;
+}
+
+.card-na {
+  border-left-color: #909399;
+}
+
+.card-na .card-value {
+  color: #909399;
+}
+
+.card-compliant {
+  border-left-color: #67c23a;
+  background: linear-gradient(135deg, #f0f9ff 0%, #fff 100%);
+}
+
+.card-compliant .card-value {
+  color: #67c23a;
+}
+
+.card-not-compliant {
+  border-left-color: #f56c6c;
+  background: linear-gradient(135deg, #fef0f0 0%, #fff 100%);
+}
+
+.card-not-compliant .card-value {
+  color: #f56c6c;
 }
 
 .status-legend {
