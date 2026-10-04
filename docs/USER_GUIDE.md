@@ -4,14 +4,15 @@
 
 1. [Getting Started](#getting-started)
 2. [Interface Overview](#interface-overview)
-3. [Marking Attendance](#marking-attendance)
-4. [Viewing Attendance](#viewing-attendance)
-5. [Exporting Data](#exporting-data)
-6. [Importing Data](#importing-data)
-7. [Managing Multiple Years](#managing-multiple-years)
-8. [Understanding the Quarterly View](#understanding-the-quarterly-view)
-9. [Data Storage and Backup](#data-storage-and-backup)
-10. [Troubleshooting](#troubleshooting)
+3. [Compliance Tracking](#compliance-tracking)
+4. [Marking Attendance](#marking-attendance)
+5. [Viewing Attendance](#viewing-attendance)
+6. [Exporting Data](#exporting-data)
+7. [Importing Data](#importing-data)
+8. [Managing Multiple Years](#managing-multiple-years)
+9. [Understanding the Quarterly View](#understanding-the-quarterly-view)
+10. [Data Storage and Backup](#data-storage-and-backup)
+11. [Troubleshooting](#troubleshooting)
 
 ## Getting Started
 
@@ -67,13 +68,94 @@ Each month shows weeks with individual days.
 
 ![Quarterly View](screenshots/quarterly-view.png)
 
+## Compliance Tracking
+
+### Understanding Compliance Cards
+
+The application displays four compliance cards at the top of the main content area, one for each quarter (Q1-Q4).
+
+![Compliance Cards](screenshots/compliance-cards.png)
+
+### Compliance Calculation
+
+Compliance is calculated based on the average number of in-office days per week:
+
+- **Target**: 3 or more in-office days per week
+- **Only In-office days count**: WFH, PTO, Sick Leave, and other statuses do not count toward compliance
+- **Week-based calculation**: Average is calculated across all weeks with attendance entries
+
+### Quarter-Specific Behavior
+
+- **Q1, Q2, Q3**: Compliance is calculated for all weeks that have attendance entries
+- **Q4**: Compliance includes:
+  - All completed weeks (weeks that ended before today)
+  - The current week (the week containing today)
+  - Excludes weeks that are entirely in the future
+
+### Compliance Status Indicators
+
+Each compliance card shows:
+
+- **Green Card with ✅ Checkmark**: Compliant
+  - Average in-office days ≥ 3 per week
+  - Left border: Green
+  - Background: Subtle green gradient
+
+- **Red Card with ❌ X**: Not Compliant
+  - Average in-office days < 3 per week
+  - Left border: Red
+  - Background: Subtle red gradient
+
+- **Gray Card with ❓ Question Mark**: Not Available
+  - No attendance entries for the quarter
+  - Left border: Gray
+  - Text: "Not Available"
+
+### Example Calculations
+
+**Example 1: Compliant**
+- Week 1: 4 in-office days
+- Week 2: 3 in-office days
+- Average: (4 + 3) / 2 = 3.5
+- Status: Compliant ✅
+
+**Example 2: Not Compliant**
+- Week 1: 2 in-office days, 2 WFH, 1 PTO
+- Week 2: 2 in-office days, 3 WFH
+- Average: (2 + 2) / 2 = 2.0
+- Status: Not Compliant ❌
+
+**Example 3: Becoming Compliant**
+- Week 1: 2 in-office days (already completed)
+- Week 2: 5 in-office days (current week, not yet complete)
+- Average: (2 + 5) / 2 = 3.5
+- Status: Compliant ✅
+
+### Improving Compliance
+
+To improve your compliance:
+
+1. **Increase In-office Days**: Mark more days as "In-office" rather than WFH
+2. **Track Weekly Progress**: Monitor the compliance card to see your current average
+3. **Plan Ahead**: Schedule more in-office days for upcoming weeks
+4. **Review Past Weeks**: If possible, update past weeks with accurate in-office days
+
+### Compliance Card Features
+
+- **Hover Effect**: Cards lift slightly when hovered for better interactivity
+- **Responsive Layout**: Cards stack vertically on smaller screens
+- **Real-time Updates**: Compliance recalculates automatically when you update attendance
+- **Color Coding**: Quick visual recognition of compliance status
+
 ## Marking Attendance
 
 ### Step-by-Step Process
 
-1. **Select a Day**: Click on any day cell (except weekends)
-   - Weekends are grayed out and cannot be selected
+1. **Select a Day**: Click on any day cell (except weekends and future dates)
+   - Weekends (Saturday/Sunday) are grayed out and cannot be selected
+   - Future dates are dimmed and cannot be selected
    - Days from adjacent months (shown in the same week) are slightly dimmed but selectable
+   - Today and past dates are selectable
 
 2. **Choose Status**: A dialog will appear with a status dropdown
    - Select your attendance status from the list

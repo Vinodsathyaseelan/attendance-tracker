@@ -12,6 +12,7 @@ The following screenshots are referenced in the documentation:
 ### USER_GUIDE.md
 - `app-start.png` - Application when first loaded
 - `header.png` - Header section with year selector and buttons
+- `compliance-cards.png` - Compliance cards showing Q1-Q4 status
 - `status-legend.png` - Color-coded status legend
 - `quarterly-view.png` - Quarterly view showing all four quarters
 - `marking-attendance.png` - Dialog for selecting attendance status
