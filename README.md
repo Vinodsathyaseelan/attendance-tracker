@@ -2,9 +2,9 @@
 
 A modern web-based attendance tracking application built with Vue 3 and Element Plus. Track your daily attendance with an intuitive quarterly view, mark status for each day, and export data to Excel.
 
-![Attendance Tracker Overview](docs/screenshots/overview.png)
+<img src="docs/screenshots/compliance-cards.png" alt="Compliance Cards" style="border: 2px solid #e0e0e0; border-radius: 8px; margin: 20px 0;">
 
-![Compliance Cards](docs/screenshots/compliance-cards.png)
+<img src="docs/screenshots/overview.png" alt="Attendance Tracker Overview" style="border: 2px solid #e0e0e0; border-radius: 8px; margin: 20px 0;">
 
 ## Features
 
