@@ -41,7 +41,7 @@ A modern web-based attendance tracking application built with Vue 3 and Element 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/attendance-tracker.git
+git clone https://github.com/Vinodsathyaseelan/attendance-tracker.git
 cd attendance-tracker
 ```
 

@@ -364,4 +364,4 @@ To clear all attendance data for a year:
 
 ## Support
 
-For issues, questions, or feature requests, please visit the [GitHub repository](https://github.com/yourusername/attendance-tracker) and open an issue.
+For issues, questions, or feature requests, please visit the [GitHub repository](https://github.com/Vinodsathyaseelan/attendance-tracker) and open an issue.
