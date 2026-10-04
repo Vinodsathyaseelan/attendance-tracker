@@ -37,25 +37,119 @@ A modern web-based attendance tracking application built with Vue 3 and Element 
 - Node.js (v16 or higher)
 - npm or yarn
 
-### Setup
+### Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/Vinodsathyaseelan/attendance-tracker.git
-cd attendance-tracker
-```
+#### macOS
 
-2. Install dependencies:
-```bash
-npm install
-```
+1. **Install Node.js** (if not already installed):
+   ```bash
+   # Using Homebrew
+   brew install node
+   ```
 
-3. Start the development server:
-```bash
-npm run dev
-```
+2. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Vinodsathyaseelan/attendance-tracker.git
+   cd attendance-tracker
+   ```
 
-4. Open your browser and navigate to `http://localhost:3000`
+3. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+4. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser** and navigate to `http://localhost:3000`
+
+#### Windows
+
+1. **Install Node.js** (if not already installed):
+   - Download the installer from [nodejs.org](https://nodejs.org/)
+   - Run the installer and follow the prompts
+   - Restart your terminal/command prompt after installation
+
+2. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Vinodsathyaseelan/attendance-tracker.git
+   cd attendance-tracker
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+4. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser** and navigate to `http://localhost:3000`
+
+#### Linux (Ubuntu/Debian)
+
+1. **Install Node.js** (if not already installed):
+   ```bash
+   # Using NodeSource repository
+   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+   sudo apt-get install -y nodejs
+
+   # Or using package manager (may have older version)
+   sudo apt-get update
+   sudo apt-get install -y nodejs npm
+   ```
+
+2. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Vinodsathyaseelan/attendance-tracker.git
+   cd attendance-tracker
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+4. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser** and navigate to `http://localhost:3000`
+
+#### Linux (Fedora/RHEL)
+
+1. **Install Node.js** (if not already installed):
+   ```bash
+   # Using NodeSource repository
+   curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+   sudo yum install -y nodejs
+
+   # Or using dnf
+   sudo dnf install nodejs npm
+   ```
+
+2. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Vinodsathyaseelan/attendance-tracker.git
+   cd attendance-tracker
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+4. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser** and navigate to `http://localhost:3000`
 
 ## Usage
 
