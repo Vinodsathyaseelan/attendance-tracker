@@ -166,7 +166,7 @@ const statusTypes = [
 ]
 
 const currentYear = new Date().getFullYear()
-const years = [currentYear - 1, currentYear, currentYear + 1]
+const years = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1, currentYear + 2]
 const selectedYear = ref(currentYear)
 
 const attendanceData = ref({})
@@ -403,12 +403,17 @@ function getComplianceStatus(quarterIndex) {
   let hasAnyEntry = false
   const now = new Date()
   
+  // Determine the current quarter based on today's date
+  const currentMonth = now.getMonth()
+  const currentQuarter = Math.floor(currentMonth / 3)
+  const isCurrentYear = year === now.getFullYear()
+  
   quarterMonths.forEach(month => {
     const weeks = generateWeeksForMonth(year, month)
     
     weeks.forEach(week => {
-      // For current quarter (Q4), only include completed weeks or the current week
-      if (quarterIndex === 3) {
+      // For the current quarter of the current year, only include completed weeks or the current week
+      if (isCurrentYear && quarterIndex === currentQuarter) {
         const weekEnd = new Date(week.end)
         weekEnd.setHours(23, 59, 59, 999)
         const weekStart = new Date(week.start)

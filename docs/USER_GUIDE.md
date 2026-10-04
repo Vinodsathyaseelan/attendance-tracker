@@ -86,11 +86,24 @@ Compliance is calculated based on the average number of in-office days per week:
 
 ### Quarter-Specific Behavior
 
-- **Q1, Q2, Q3**: Compliance is calculated for all weeks that have attendance entries
-- **Q4**: Compliance includes:
+The compliance calculation behaves differently based on the year and quarter:
+
+- **Current Year, Current Quarter**: Compliance includes:
   - All completed weeks (weeks that ended before today)
   - The current week (the week containing today)
   - Excludes weeks that are entirely in the future
+
+- **Current Year, Past Quarters**: Compliance is calculated for all weeks that have attendance entries
+
+- **Past Years**: Compliance is calculated for all weeks that have attendance entries
+
+- **Future Years**: Compliance is calculated for all weeks that have attendance entries (once data is entered)
+
+**Example**: If today is October 3, 2026 (Q4):
+- Q1, Q2, Q3 (2026): Show compliance for all weeks with entries
+- Q4 (2026): Show compliance for completed weeks + current week
+- Q1-Q4 (2027): Show compliance for all weeks with entries (once entered)
+- Q1-Q4 (2025): Show compliance for all weeks with entries
 
 ### Compliance Status Indicators
 
@@ -213,9 +226,9 @@ Example exported data:
 
 | Date | Day | Status |
 |------|-----|--------|
-| 2024-10-01 | Tuesday | In-office |
-| 2024-10-02 | Wednesday | WFH |
-| 2024-10-03 | Thursday | In-office |
+| 2026-10-01 | Thursday | In-office |
+| 2026-10-02 | Friday | WFH |
+| 2026-10-05 | Monday | In-office |
 
 ### Updating Existing Excel Files
 

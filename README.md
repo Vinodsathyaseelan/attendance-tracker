@@ -2,7 +2,9 @@
 
 A modern web-based attendance tracking application built with Vue 3 and Element Plus. Track your daily attendance with an intuitive quarterly view, mark status for each day, and export data to Excel.
 
-![Attendance Tracker](docs/screenshots/overview.png)
+![Attendance Tracker Overview](docs/screenshots/overview.png)
+
+![Compliance Cards](docs/screenshots/compliance-cards.png)
 
 ## Features
 
@@ -158,8 +160,9 @@ A modern web-based attendance tracking application built with Vue 3 and Element 
 The application displays compliance status for each quarter (Q1-Q4) in a card layout:
 
 - **Compliance Calculation**: Based on average in-office days per week (target: 3+ days)
-- **Q1-Q3**: Shows compliance for all weeks with attendance entries
-- **Q4**: Shows compliance for completed weeks and the current week
+- **Current Year, Current Quarter**: Shows compliance for completed weeks and the current week only
+- **Current Year, Past Quarters**: Shows compliance for all weeks with attendance entries
+- **Past/Future Years**: Shows compliance for all weeks with attendance entries
 - **Status Indicators**:
   - ✅ Green card with checkmark: Compliant (average ≥ 3 in-office days/week)
   - ❌ Red card with X: Not Compliant (average < 3 in-office days/week)
@@ -235,8 +238,9 @@ The exported Excel file follows this format:
 
 | Date | Day | Status |
 |------|-----|--------|
-| 2024-10-01 | Tuesday | In-office |
-| 2024-10-02 | Wednesday | WFH |
+| 2026-10-01 | Thursday | In-office |
+| 2026-10-02 | Friday | WFH |
+| 2026-10-05 | Monday | In-office |
 
 When importing, the application matches dates and updates the corresponding status.
 
