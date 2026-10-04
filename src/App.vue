@@ -28,6 +28,25 @@
         </div>
       </el-header>
 
+      <el-header class="compliance-header">
+        <div class="compliance-item">
+          <span class="compliance-label">Q1 Compliance:</span>
+          <span class="compliance-value" :class="getComplianceClass(0)">{{ getComplianceStatus(0) }}</span>
+        </div>
+        <div class="compliance-item">
+          <span class="compliance-label">Q2 Compliance:</span>
+          <span class="compliance-value" :class="getComplianceClass(1)">{{ getComplianceStatus(1) }}</span>
+        </div>
+        <div class="compliance-item">
+          <span class="compliance-label">Q3 Compliance:</span>
+          <span class="compliance-value" :class="getComplianceClass(2)">{{ getComplianceStatus(2) }}</span>
+        </div>
+        <div class="compliance-item">
+          <span class="compliance-label">Q4 Compliance:</span>
+          <span class="compliance-value" :class="getComplianceClass(3)">{{ getComplianceStatus(3) }}</span>
+        </div>
+      </el-header>
+
       <el-main>
         <div class="status-legend">
           <span class="legend-item" v-for="status in statusTypes" :key="status.value">
@@ -59,7 +78,8 @@
                         :class="{ 
                           'weekend': day.isWeekend, 
                           'today': isToday(day.date),
-                          'other-month': !day.isCurrentMonth 
+                          'other-month': !day.isCurrentMonth,
+                          'future-date': isFutureDate(day.date)
                         }"
                         @click="selectDay(day)"
                       >
@@ -240,6 +260,14 @@ function isToday(date) {
   return date.toDateString() === today.toDateString()
 }
 
+function isFutureDate(date) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const dayDate = new Date(date)
+  dayDate.setHours(0, 0, 0, 0)
+  return dayDate > today
+}
+
 function getAttendanceStatus(date) {
   const dateKey = date.toISOString().split('T')[0]
   const status = attendanceData.value[dateKey]
@@ -248,6 +276,15 @@ function getAttendanceStatus(date) {
 
 function selectDay(day) {
   if (day.isWeekend) return
+  
+  // Disable future dates
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const dayDate = new Date(day.date)
+  dayDate.setHours(0, 0, 0, 0)
+  
+  if (dayDate > today) return
+  
   selectedDay.value = day
   selectedStatus.value = attendanceData.value[day.date.toISOString().split('T')[0]] || ''
   statusDialogVisible.value = true
@@ -329,6 +366,81 @@ function handleFileImport(event) {
   reader.readAsArrayBuffer(file)
 }
 
+function getComplianceStatus(quarterIndex) {
+  const year = selectedYear.value
+  const quarterMonths = [0, 1, 2].map(m => quarterIndex * 3 + m)
+  
+  let totalInOfficeDays = 0
+  let totalWeeks = 0
+  let hasAnyEntry = false
+  const now = new Date()
+  
+  quarterMonths.forEach(month => {
+    const weeks = generateWeeksForMonth(year, month)
+    
+    weeks.forEach(week => {
+      // For current quarter (Q4), only include completed weeks or the current week
+      if (quarterIndex === 3) {
+        const weekEnd = new Date(week.end)
+        weekEnd.setHours(23, 59, 59, 999)
+        const weekStart = new Date(week.start)
+        weekStart.setHours(0, 0, 0, 0)
+        
+        // Skip if week is entirely in the future
+        if (weekStart > now) return
+      }
+      
+      let weekHasEntry = false
+      let weekInOfficeDays = 0
+      
+      week.days.forEach(day => {
+        const dateKey = day.date.toISOString().split('T')[0]
+        const status = attendanceData.value[dateKey]
+        
+        if (status) {
+          hasAnyEntry = true
+          weekHasEntry = true
+          if (status === 'in-office') {
+            weekInOfficeDays++
+          }
+        }
+      })
+      
+      if (weekHasEntry) {
+        totalWeeks++
+        totalInOfficeDays += weekInOfficeDays
+      }
+    })
+  })
+  
+  if (!hasAnyEntry) {
+    return 'Not Available'
+  }
+  
+  if (totalWeeks === 0) {
+    return 'Not Available'
+  }
+  
+  const average = totalInOfficeDays / totalWeeks
+  const isCompliant = average >= 3
+  
+  return `${average.toFixed(1)} (${isCompliant ? 'Compliant' : 'Not Compliant'})`
+}
+
+function getComplianceClass(quarterIndex) {
+  const status = getComplianceStatus(quarterIndex)
+  
+  if (status === 'Not Available') {
+    return 'compliance-na'
+  }
+  
+  if (status.includes('Compliant')) {
+    return 'compliant'
+  }
+  
+  return 'not-compliant'
+}
+
 onMounted(() => {
   loadAttendanceData()
 })
@@ -358,6 +470,50 @@ onMounted(() => {
 .header-controls {
   display: flex;
   align-items: center;
+}
+
+.compliance-header {
+  background: #fff;
+  border-top: 1px solid #ebeef5;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 15px 20px;
+  height: auto;
+}
+
+.compliance-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.compliance-label {
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.compliance-value {
+  font-size: 16px;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.compliance-na {
+  color: #909399;
+  background: #f4f4f5;
+}
+
+.compliant {
+  color: #67c23a;
+  background: #f0f9ff;
+}
+
+.not-compliant {
+  color: #f56c6c;
+  background: #fef0f0;
 }
 
 .el-main {
@@ -490,6 +646,11 @@ onMounted(() => {
 
 .day.other-month {
   opacity: 0.6;
+}
+
+.day.future-date {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .day.today {
