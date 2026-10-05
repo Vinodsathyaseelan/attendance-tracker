@@ -243,7 +243,7 @@ When you export multiple times, you'll get new files. To maintain a single updat
 ### Import from Excel
 
 1. Click the "Import from Excel" button in the header
-2. Select an Excel file (.xlsx or .xls format)
+2. Select an Excel file in `.xlsx` format
 3. The application will read the file and update attendance data
 4. Data is merged with existing entries (dates are matched)
 
@@ -306,9 +306,11 @@ Weeks are organized based on the **Thursday rule**:
 
 ### Local Storage
 
-- All data is stored in your browser's local storage
-- Data persists between browser sessions
-- Data is specific to each browser and device
+- The web version stores data in your browser's local storage
+- The macOS app stores data in `attendance.json` inside its application data directory
+- Data persists between browser or application sessions
+- Data remains local to the browser or Mac unless you explicitly export it
+- To migrate from the web version, export an Excel workbook and import it in the macOS app
 
 ### Backup Recommendations
 

@@ -30,7 +30,8 @@ A modern web-based attendance tracking application built with Vue 3 and Element 
 - **Vue 3** - Progressive JavaScript framework
 - **Element Plus** - Vue 3 UI component library
 - **Vite** - Next generation frontend tooling
-- **XLSX** - Excel file generation and parsing
+- **ExcelJS** - Excel file generation and validated parsing
+- **Tauri 2** - Native macOS application shell and local integrations
 
 ## Installation
 
@@ -66,6 +67,37 @@ A modern web-based attendance tracking application built with Vue 3 and Element 
    ```
 
 5. **Open your browser** and navigate to `http://localhost:3000`
+
+### Standalone macOS Application
+
+The desktop application requires macOS, Xcode Command Line Tools, Rust, Node.js, and npm.
+
+```bash
+xcode-select --install
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+npm install
+```
+
+Run the desktop application in development mode:
+
+```bash
+npm run desktop:dev
+```
+
+Build a personal macOS application and disk image:
+
+```bash
+npm run desktop:build
+```
+
+Build outputs are created under:
+
+```text
+src-tauri/target/release/bundle/macos/Attendance Tracker.app
+src-tauri/target/release/bundle/dmg/Attendance Tracker_1.0.0_aarch64.dmg
+```
+
+The application is not notarized for public distribution. A locally built app can be opened directly; if Gatekeeper blocks a copied build, right-click the app, choose **Open**, and confirm. Attendance is stored locally in the app data directory. To migrate browser data, export an Excel workbook from the web version and import it in the macOS app.
 
 #### Windows
 
@@ -230,7 +262,7 @@ The built files will be in the `dist/` directory.
 
 ## Data Storage
 
-All attendance data is stored in your browser's local storage under the key `attendance_YYYY` (where YYYY is the year). Data is persisted between sessions and is specific to each year.
+The web application stores attendance in browser local storage under the key `attendance_YYYY` (where YYYY is the year). The macOS application stores the same year-keyed data in `attendance.json` within its application data directory. Both remain local to the device and persist between sessions.
 
 ## Excel Format
 
