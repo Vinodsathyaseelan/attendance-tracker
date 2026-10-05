@@ -4,7 +4,7 @@
       <el-header>
         <h1>Attendance Tracker</h1>
         <div class="header-controls">
-          <el-select v-model="selectedYear" @change="loadAttendanceData" style="width: 120px; margin-right: 10px">
+          <el-select v-model="selectedYear" @change="handleYearChange" style="width: 120px; margin-right: 10px">
             <el-option
               v-for="year in years"
               :key="year"
@@ -93,6 +93,7 @@
                   <div
                     v-for="week in month.weeks"
                     :key="week.start"
+                    :ref="element => setCurrentWeekElement(element, week)"
                     class="week"
                     :class="{ 'current-week': isCurrentWeek(week) }"
                   >
@@ -153,7 +154,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { Download, Upload, SuccessFilled, CircleCloseFilled, QuestionFilled } from '@element-plus/icons-vue'
 import * as XLSX from 'xlsx'
 
@@ -175,6 +176,7 @@ const statusDialogVisible = ref(false)
 const selectedDay = ref(null)
 const selectedStatus = ref('')
 const fileInput = ref(null)
+const currentWeekElement = ref(null)
 
 const quarters = computed(() => {
   const year = selectedYear.value
@@ -349,6 +351,23 @@ function loadAttendanceData() {
   attendanceData.value = data ? JSON.parse(data) : {}
 }
 
+function setCurrentWeekElement(element, week) {
+  if (element && isCurrentWeek(week)) {
+    currentWeekElement.value = element
+  }
+}
+
+async function scrollToCurrentWeek() {
+  await nextTick()
+  currentWeekElement.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+async function handleYearChange() {
+  loadAttendanceData()
+  currentWeekElement.value = null
+  await scrollToCurrentWeek()
+}
+
 function exportToExcel() {
   const workbook = XLSX.utils.book_new()
   const worksheetData = []
@@ -424,15 +443,13 @@ function getComplianceStatus(quarterIndex) {
     const weeks = generateWeeksForMonth(year, month)
     
     weeks.forEach(week => {
-      // For the current quarter of the current year, only include completed weeks or the current week
+      // For the current quarter, include a week only after its Monday-Friday work week has ended.
       if (isCurrentYear && quarterIndex === currentQuarter) {
-        const weekEnd = new Date(week.end)
-        weekEnd.setHours(23, 59, 59, 999)
-        const weekStart = new Date(week.start)
-        weekStart.setHours(0, 0, 0, 0)
-        
-        // Skip if week is entirely in the future
-        if (weekStart > now) return
+        const workWeekCompletedAt = new Date(week.start)
+        workWeekCompletedAt.setDate(workWeekCompletedAt.getDate() + 6)
+        workWeekCompletedAt.setHours(0, 0, 0, 0)
+
+        if (now < workWeekCompletedAt) return
       }
       
       let weekHasEntry = false
@@ -528,8 +545,9 @@ function getComplianceIconColor(quarterIndex) {
   return '#f56c6c'
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadAttendanceData()
+  await scrollToCurrentWeek()
 })
 </script>
 

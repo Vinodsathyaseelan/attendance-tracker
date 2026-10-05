@@ -89,9 +89,9 @@ Compliance is calculated based on the average number of in-office days per week:
 The compliance calculation behaves differently based on the year and quarter:
 
 - **Current Year, Current Quarter**: Compliance includes:
-  - All completed weeks (weeks that ended before today)
-  - The current week (the week containing today)
-  - Excludes weeks that are entirely in the future
+  - Completed Monday-Friday work weeks only
+  - The current work week only after it ends
+  - Excludes the current in-progress week and future weeks
 
 - **Current Year, Past Quarters**: Compliance is calculated for all weeks that have attendance entries
 
@@ -99,9 +99,9 @@ The compliance calculation behaves differently based on the year and quarter:
 
 - **Future Years**: Compliance is calculated for all weeks that have attendance entries (once data is entered)
 
-**Example**: If today is October 3, 2026 (Q4):
+**Example**: If today is Monday, October 5, 2026 (Q4):
 - Q1, Q2, Q3 (2026): Show compliance for all weeks with entries
-- Q4 (2026): Show compliance for completed weeks + current week
+- Q4 (2026): Excludes the October 5-9 work week until it has ended
 - Q1-Q4 (2027): Show compliance for all weeks with entries (once entered)
 - Q1-Q4 (2025): Show compliance for all weeks with entries
 
