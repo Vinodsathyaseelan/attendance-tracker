@@ -21,7 +21,7 @@
           <input
             ref="fileInput"
             type="file"
-            accept=".xlsx,.xls"
+            accept=".xlsx"
             style="display: none"
             @change="handleFileImport"
           />
@@ -155,8 +155,12 @@
 
 <script setup>
 import { ref, computed, nextTick, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { Download, Upload, SuccessFilled, CircleCloseFilled, QuestionFilled } from '@element-plus/icons-vue'
-import * as XLSX from 'xlsx'
+import { loadAttendance, saveAttendance } from './services/attendanceStorage'
+import { isTauri } from './services/platform'
+import { createAttendanceWorkbook, parseAttendanceWorkbook } from './services/workbook'
+import { exportWorkbook, importWorkbook } from './services/workbookFiles'
 
 const statusTypes = [
   { label: 'In-office', value: 'in-office', color: '#67C23A' },
@@ -321,34 +325,43 @@ function selectDay(day) {
   statusDialogVisible.value = true
 }
 
-function saveStatus() {
-  if (selectedDay.value) {
-    const dateKey = selectedDay.value.date.toISOString().split('T')[0]
-    attendanceData.value[dateKey] = selectedStatus.value
-    saveAttendanceData()
+async function saveStatus() {
+  if (!selectedDay.value) return
+
+  const dateKey = selectedDay.value.date.toISOString().split('T')[0]
+  attendanceData.value[dateKey] = selectedStatus.value
+  try {
+    await saveAttendanceData()
     statusDialogVisible.value = false
+  } catch (error) {
+    ElMessage.error(`Unable to save attendance: ${error.message}`)
   }
 }
 
-function clearStatus() {
-  if (selectedDay.value) {
-    const dateKey = selectedDay.value.date.toISOString().split('T')[0]
-    delete attendanceData.value[dateKey]
-    saveAttendanceData()
+async function clearStatus() {
+  if (!selectedDay.value) return
+
+  const dateKey = selectedDay.value.date.toISOString().split('T')[0]
+  delete attendanceData.value[dateKey]
+  try {
+    await saveAttendanceData()
     selectedStatus.value = ''
     statusDialogVisible.value = false
+  } catch (error) {
+    ElMessage.error(`Unable to clear attendance: ${error.message}`)
   }
 }
 
-function saveAttendanceData() {
-  const key = `attendance_${selectedYear.value}`
-  localStorage.setItem(key, JSON.stringify(attendanceData.value))
+async function saveAttendanceData() {
+  await saveAttendance(selectedYear.value, attendanceData.value)
 }
 
-function loadAttendanceData() {
-  const key = `attendance_${selectedYear.value}`
-  const data = localStorage.getItem(key)
-  attendanceData.value = data ? JSON.parse(data) : {}
+async function loadAttendanceData() {
+  try {
+    attendanceData.value = await loadAttendance(selectedYear.value)
+  } catch (error) {
+    ElMessage.error(`Unable to load attendance: ${error.message}`)
+  }
 }
 
 function setCurrentWeekElement(element, week) {
@@ -363,66 +376,52 @@ async function scrollToCurrentWeek() {
 }
 
 async function handleYearChange() {
-  loadAttendanceData()
+  await loadAttendanceData()
   currentWeekElement.value = null
   await scrollToCurrentWeek()
 }
 
-function exportToExcel() {
-  const workbook = XLSX.utils.book_new()
-  const worksheetData = []
-
-  worksheetData.push(['Date', 'Day', 'Status'])
-
-  Object.keys(attendanceData.value).sort().forEach(dateKey => {
-    const [year, month, day] = dateKey.split('-').map(Number)
-    const date = new Date(year, month - 1, day)
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-    const status = attendanceData.value[dateKey]
-    const statusLabel = statusTypes.find(s => s.value === status)?.label || status
-
-    worksheetData.push([
-      dateKey,
-      dayNames[date.getDay()],
-      statusLabel
-    ])
-  })
-
-  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance')
-
-  XLSX.writeFile(workbook, `attendance_${selectedYear.value}.xlsx`)
+async function exportToExcel() {
+  try {
+    const data = await createAttendanceWorkbook(attendanceData.value, statusTypes)
+    await exportWorkbook(data, `attendance_${selectedYear.value}.xlsx`)
+  } catch (error) {
+    ElMessage.error(`Unable to export attendance: ${error.message}`)
+  }
 }
 
-function importFromExcel() {
-  fileInput.value.click()
+async function importFromExcel() {
+  if (!isTauri()) {
+    fileInput.value.click()
+    return
+  }
+
+  try {
+    const data = await importWorkbook()
+    if (data) await applyWorkbookData(data)
+  } catch (error) {
+    ElMessage.error(`Unable to import attendance: ${error.message}`)
+  }
 }
 
-function handleFileImport(event) {
+async function applyWorkbookData(data) {
+  const importedAttendance = await parseAttendanceWorkbook(data, statusTypes)
+  attendanceData.value = { ...attendanceData.value, ...importedAttendance }
+  await saveAttendanceData()
+}
+
+async function handleFileImport(event) {
   const file = event.target.files[0]
   if (!file) return
 
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    const data = new Uint8Array(e.target.result)
-    const workbook = XLSX.read(data, { type: 'array' })
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
-
-    jsonData.forEach((row, index) => {
-      if (index === 0) return
-      if (row[0] && row[2]) {
-        const dateKey = row[0]
-        const statusLabel = row[2]
-        const status = statusTypes.find(s => s.label === statusLabel)?.value || statusLabel
-        attendanceData.value[dateKey] = status
-      }
-    })
-
-    saveAttendanceData()
+  try {
+    const data = await importWorkbook(file)
+    if (data) await applyWorkbookData(data)
+  } catch (error) {
+    ElMessage.error(`Unable to import attendance: ${error.message}`)
+  } finally {
     fileInput.value.value = ''
   }
-  reader.readAsArrayBuffer(file)
 }
 
 function getComplianceStatus(quarterIndex) {
@@ -546,7 +545,7 @@ function getComplianceIconColor(quarterIndex) {
 }
 
 onMounted(async () => {
-  loadAttendanceData()
+  await loadAttendanceData()
   await scrollToCurrentWeek()
 })
 </script>
