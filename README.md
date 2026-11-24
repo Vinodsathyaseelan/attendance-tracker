@@ -1,10 +1,10 @@
 # Attendance Tracker
 
-A modern web-based attendance tracking application built with Vue 3 and Element Plus. Track your daily attendance with an intuitive quarterly view, mark status for each day, and export data to Excel.
+A modern attendance tracking application with an intuitive quarterly view. Mark your daily status, monitor compliance, and export data to Excel—available as a native macOS desktop app or as a web application.
 
-<img src="docs/screenshots/compliance-cards.png" alt="Compliance Cards" style="border: 2px solid #e0e0e0; border-radius: 8px; margin: 20px 0;">
+<img src="docs/screenshots/dashboard-2026.png" alt="Attendance Tracker Dashboard" style="border: 2px solid #e0e0e0; border-radius: 8px; margin: 20px 0; max-width: 100%;">
 
-<img src="docs/screenshots/overview.png" alt="Attendance Tracker Overview" style="border: 2px solid #e0e0e0; border-radius: 8px; margin: 20px 0;">
+<img src="docs/screenshots/compliance-cards.png" alt="Compliance Cards" style="border: 2px solid #e0e0e0; border-radius: 8px; margin: 20px 0; max-width: 100%;">
 
 ## Features
 
@@ -14,7 +14,7 @@ A modern web-based attendance tracking application built with Vue 3 and Element 
 - **Compliance Tracking**: Monitor quarterly compliance with average in-office days per week
 - **Card-Based Compliance Display**: Visual cards for each quarter with status indicators
 - **Date Restrictions**: Future dates and weekends are disabled for attendance entry
-- **Local Storage**: All data is saved locally in your browser
+- **Local Storage**: All data is saved locally (browser or app data directory)
 - **Excel Export**: Export attendance data to Excel spreadsheets
 - **Excel Import**: Import existing Excel data to update the tracker
 - **Year Selection**: Switch between different years
@@ -35,18 +35,14 @@ A modern web-based attendance tracking application built with Vue 3 and Element 
 
 ## Installation
 
-### Prerequisites
+### Web Application
 
-- Node.js (v16 or higher)
-- npm or yarn
-
-### Installation
+The web application requires Node.js (v16 or higher) and npm.
 
 #### macOS
 
 1. **Install Node.js** (if not already installed):
    ```bash
-   # Using Homebrew
    brew install node
    ```
 
@@ -67,37 +63,6 @@ A modern web-based attendance tracking application built with Vue 3 and Element 
    ```
 
 5. **Open your browser** and navigate to `http://localhost:3000`
-
-### Standalone macOS Application
-
-The desktop application requires macOS, Xcode Command Line Tools, Rust, Node.js, and npm.
-
-```bash
-xcode-select --install
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-npm install
-```
-
-Run the desktop application in development mode:
-
-```bash
-npm run desktop:dev
-```
-
-Build a personal macOS application and disk image:
-
-```bash
-npm run desktop:build
-```
-
-Build outputs are created under:
-
-```text
-src-tauri/target/release/bundle/macos/Attendance Tracker.app
-src-tauri/target/release/bundle/dmg/Attendance Tracker_1.0.0_aarch64.dmg
-```
-
-The application is not notarized for public distribution. A locally built app can be opened directly; if Gatekeeper blocks a copied build, right-click the app, choose **Open**, and confirm. Attendance is stored locally in the app data directory. To migrate browser data, export an Excel workbook from the web version and import it in the macOS app.
 
 #### Windows
 
@@ -185,6 +150,47 @@ The application is not notarized for public distribution. A locally built app ca
 
 5. **Open your browser** and navigate to `http://localhost:3000`
 
+#### Production Build
+
+Build for production on any platform:
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist/` directory.
+
+### macOS Desktop Application
+
+The desktop application requires macOS, Xcode Command Line Tools, Rust, Node.js, and npm.
+
+```bash
+xcode-select --install
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+npm install
+```
+
+Run the desktop application in development mode:
+
+```bash
+npm run desktop:dev
+```
+
+Build a personal macOS application and disk image:
+
+```bash
+npm run desktop:build
+```
+
+Build outputs are created under:
+
+```text
+src-tauri/target/release/bundle/macos/Attendance Tracker.app
+src-tauri/target/release/bundle/dmg/Attendance Tracker_1.0.0_aarch64.dmg
+```
+
+The application is not notarized for public distribution. A locally built app can be opened directly; if Gatekeeper blocks a copied build, right-click the app, choose **Open**, and confirm.
+
 ## Usage
 
 ### Compliance Tracking
@@ -205,12 +211,12 @@ The application displays compliance status for each quarter (Q1-Q4) in a card la
 
 1. Click on any day (except weekends) to open the status selector
 2. Select your attendance status from the dropdown
-3. The status is automatically saved to local storage
+3. The status is automatically saved to local storage (browser or app data directory)
 
 ### Exporting to Excel
 
 1. Click the "Export to Excel" button in the header
-2. An Excel file named `attendance_YYYY.xlsx` will be downloaded
+2. An Excel file named `attendance_YYYY.xlsx` will be downloaded (web) or saved via native file dialog (macOS)
 3. The file contains columns: Date, Day, and Status
 
 ### Importing from Excel
@@ -221,7 +227,7 @@ The application displays compliance status for each quarter (Q1-Q4) in a card la
 
 ### Switching Years
 
-Use the year dropdown in the header to switch between different years. Each year's data is stored separately in local storage.
+Use the year dropdown in the header to switch between different years. Each year's data is stored separately in local storage (browser or app data directory).
 
 ## Status Types
 
@@ -252,17 +258,9 @@ attendance-tracker/
 └── README.md
 ```
 
-## Building for Production
-
-```bash
-npm run build
-```
-
-The built files will be in the `dist/` directory.
-
 ## Data Storage
 
-The web application stores attendance in browser local storage under the key `attendance_YYYY` (where YYYY is the year). The macOS application stores the same year-keyed data in `attendance.json` within its application data directory. Both remain local to the device and persist between sessions.
+The web version stores attendance in browser local storage under the key `attendance_YYYY` (where YYYY is the year). The macOS application stores the same year-keyed data in `attendance.json` within its application data directory. Both remain local to the device and persist between sessions. To migrate data between platforms, export an Excel workbook from one and import it in the other.
 
 ## Excel Format
 
@@ -276,12 +274,10 @@ The exported Excel file follows this format:
 
 When importing, the application matches dates and updates the corresponding status.
 
-## Browser Compatibility
+## Platform Support
 
-- Chrome/Edge (recommended)
-- Firefox
-- Safari
-- Any modern browser with local storage support
+- **Web**: Any platform with a modern browser (Chrome/Edge, Firefox, Safari)
+- **macOS**: Native desktop application with Tauri
 
 ## Contributing
 

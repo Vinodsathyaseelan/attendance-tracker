@@ -1,9 +1,19 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { dateKey, calendarYearForDate, generateFiscalQuarters, numberQuarterWeeks, isFutureDay, isWorkWeekComplete, startDayRefresh } from './calendar'
+import { dateKey, calendarYearForDate, generateFiscalQuarters, numberQuarterWeeks, isFutureDay, isCompliantStatus, isWorkWeekComplete, startDayRefresh } from './calendar'
 
 const weeksOf = quarter => quarter.months.flatMap(month => month.weeks)
 
 afterEach(() => vi.useRealTimers())
+
+describe('compliance presentation', () => {
+  it.each([
+    ['3.0 (Compliant)', true],
+    ['2.0 (Not Compliant)', false],
+    ['Not Available', false]
+  ])('classifies %s correctly', (status, expected) => {
+    expect(isCompliantStatus(status)).toBe(expected)
+  })
+})
 
 describe('quarter week numbering', () => {
   it('continues across months and restarts for each quarter without changing dates', () => {

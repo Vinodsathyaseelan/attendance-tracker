@@ -2,7 +2,13 @@
   <div class="attendance-tracker">
     <el-container>
       <el-header>
-        <h1>Attendance Tracker</h1>
+        <div class="brand">
+          <div class="brand-mark"><el-icon><Calendar /></el-icon></div>
+          <div>
+            <h1>Attendance<span class="brand-accent">.</span></h1>
+            <p class="brand-subtitle">Your workweek, at a glance</p>
+          </div>
+        </div>
         <div class="header-controls">
           <el-select v-model="selectedYear" @change="handleYearChange" aria-label="Calendar year" :disabled="isNavigating || isTransitioning" style="width: 160px; margin-right: 10px">
             <el-option
@@ -12,12 +18,8 @@
               :value="year"
             />
           </el-select>
-          <el-button type="primary" @click="exportToExcel" :icon="Download">
-            Export to Excel
-          </el-button>
-          <el-button type="success" @click="importFromExcel" :icon="Upload">
-            Import from Excel
-          </el-button>
+          <el-button @click="importFromExcel" :icon="Upload" aria-label="Import from Excel">Import</el-button>
+          <el-button type="primary" @click="exportToExcel" :icon="Download" aria-label="Export to Excel">Export Excel</el-button>
           <input
             ref="fileInput"
             type="file"
@@ -29,54 +31,25 @@
       </el-header>
 
       <el-main>
-        <div class="compliance-cards">
-          <div class="compliance-card" :class="getComplianceCardClass(0)">
+        <section class="compliance-cards" aria-label="Quarterly compliance overview">
+          <article v-for="(quarter, index) in quarters" :key="quarter.name" class="compliance-card" :class="getComplianceCardClass(index)">
             <div class="card-header">
-              <h3>Q1 Compliance</h3>
-              <div class="card-icon" :style="{ color: getComplianceIconColor(0) }">
-                <SuccessFilled v-if="getComplianceStatus(0) !== 'Not Available' && getComplianceStatus(0).includes('Compliant')" />
-                <CircleCloseFilled v-else-if="getComplianceStatus(0) !== 'Not Available'" />
-                <QuestionFilled v-else />
-              </div>
+              <h3>{{ quarter.name }} <span>{{ selectedYear }}</span></h3>
+              <el-icon class="card-icon"><component :is="getComplianceIcon(index)" /></el-icon>
             </div>
-            <div class="card-value">{{ getComplianceStatus(0) }}</div>
-          </div>
-          <div class="compliance-card" :class="getComplianceCardClass(1)">
-            <div class="card-header">
-              <h3>Q2 Compliance</h3>
-              <div class="card-icon" :style="{ color: getComplianceIconColor(1) }">
-                <SuccessFilled v-if="getComplianceStatus(1) !== 'Not Available' && getComplianceStatus(1).includes('Compliant')" />
-                <CircleCloseFilled v-else-if="getComplianceStatus(1) !== 'Not Available'" />
-                <QuestionFilled v-else />
-              </div>
+            <div class="card-value">
+              {{ getComplianceStatus(index) === 'Not Available' ? '—' : getComplianceStatus(index).split(' ')[0] }}
+              <span>days / week</span>
             </div>
-            <div class="card-value">{{ getComplianceStatus(1) }}</div>
-          </div>
-          <div class="compliance-card" :class="getComplianceCardClass(2)">
-            <div class="card-header">
-              <h3>Q3 Compliance</h3>
-              <div class="card-icon" :style="{ color: getComplianceIconColor(2) }">
-                <SuccessFilled v-if="getComplianceStatus(2) !== 'Not Available' && getComplianceStatus(2).includes('Compliant')" />
-                <CircleCloseFilled v-else-if="getComplianceStatus(2) !== 'Not Available'" />
-                <QuestionFilled v-else />
-              </div>
+            <div class="card-footer">
+              <span class="compliance-pill">{{ getComplianceStatus(index) === 'Not Available' ? 'No completed weeks' : isCompliantStatus(getComplianceStatus(index)) ? 'On track' : 'Below target' }}</span>
+              <span class="card-target">Target 3.0</span>
             </div>
-            <div class="card-value">{{ getComplianceStatus(2) }}</div>
-          </div>
-          <div class="compliance-card" :class="getComplianceCardClass(3)">
-            <div class="card-header">
-              <h3>Q4 Compliance</h3>
-              <div class="card-icon" :style="{ color: getComplianceIconColor(3) }">
-                <SuccessFilled v-if="getComplianceStatus(3) !== 'Not Available' && getComplianceStatus(3).includes('Compliant')" />
-                <CircleCloseFilled v-else-if="getComplianceStatus(3) !== 'Not Available'" />
-                <QuestionFilled v-else />
-              </div>
-            </div>
-            <div class="card-value">{{ getComplianceStatus(3) }}</div>
-          </div>
-        </div>
+          </article>
+        </section>
 
-        <div class="status-legend">
+        <div class="status-legend" aria-label="Attendance status key">
+          <span class="legend-title">Attendance key</span>
           <span class="legend-item" v-for="status in statusTypes" :key="status.value">
             <span class="legend-color" :style="{ backgroundColor: status.color }"></span>
             {{ status.label }}
@@ -85,62 +58,69 @@
 
         <div class="quarters-container" @wheel="handleCalendarWheel">
           <div class="calendar-navigation">
-            <el-button @click="navigateMonth(-1)" :disabled="isNavigating || isTransitioning || selectedYear === years[0] && activeMonthIndex === 0">Previous month</el-button>
-            <el-select v-model="activeMonthIndex" aria-label="Displayed month" style="width: 280px" :disabled="isNavigating || isTransitioning">
-              <el-option v-for="(page, index) in pages" :key="index" :label="page.label" :value="index" />
-            </el-select>
-            <el-button @click="navigateMonth(1)" :disabled="isNavigating || isTransitioning || selectedYear === years[years.length - 1] && activeMonthIndex === pages.length - 1">Next month</el-button>
-            <el-button @click="showToday" :disabled="isNavigating || isTransitioning">Today</el-button>
-            <span class="navigation-hint">Scroll here or use ↑ / ↓ to change month</span>
+            <div class="calendar-title">
+              <h2>Attendance calendar</h2>
+              <span class="navigation-hint">Scroll or use <kbd>↑</kbd> <kbd>↓</kbd> to explore months</span>
+            </div>
+            <div class="month-controls">
+              <el-button @click="showToday" :disabled="isNavigating || isTransitioning">Today</el-button>
+              <el-button :icon="ArrowLeft" aria-label="Previous month" title="Previous month" @click="navigateMonth(-1)" :disabled="isNavigating || isTransitioning || selectedYear === years[0] && activeMonthIndex === 0" />
+              <el-select v-model="activeMonthIndex" aria-label="Displayed month" class="month-select" :disabled="isNavigating || isTransitioning">
+                <el-option v-for="(page, index) in pages" :key="index" :label="page.label" :value="index" />
+              </el-select>
+              <el-button :icon="ArrowRight" aria-label="Next month" title="Next month" @click="navigateMonth(1)" :disabled="isNavigating || isTransitioning || selectedYear === years[years.length - 1] && activeMonthIndex === pages.length - 1" />
+            </div>
           </div>
           <Transition :name="monthTransition" mode="out-in" @before-leave="isTransitioning = true" @after-enter="isTransitioning = false" @enter-cancelled="isTransitioning = false">
-          <div v-if="visibleQuarter" :key="`${selectedYear}-${activeMonthIndex}`" class="quarter" v-loading="isNavigating">
-            <h2>{{ visibleQuarter.name }} {{ selectedYear }}</h2>
-            <div class="months-grid">
-              <div v-for="month in visibleQuarter.months" :key="month.name" class="month">
-                <h3>{{ month.name }}</h3>
-                <div class="weeks-grid">
-                  <div
-                    v-for="week in month.weeks"
-                    :key="week.start"
-                    class="week"
-                    :class="{ 'current-week': isCurrentWeek(week) }"
-                  >
-                    <div class="week-label">W{{ week.number }}</div>
-                    <div class="week-dates">{{ formatDateRange(week.start, week.end) }}</div>
-                    <div class="week-days">
-                      <div
-                        v-for="day in week.days"
-                        :key="day.date"
-                        class="day"
-                        :class="{ 
-                          'weekend': day.isWeekend, 
-                          'today': isToday(day.date),
-                          'other-month': !day.isCurrentMonth,
-                          'future-date': isFutureDate(day.date)
-                        }"
-                        @click="selectDay(day)"
-                      >
-                        <div class="day-number">{{ day.dayNumber }}</div>
-                        <el-tooltip :content="getAttendanceStatus(day.date).label" placement="top" :disabled="!getAttendanceStatus(day.date).value">
-                          <div
-                            class="day-status"
-                            :style="{ backgroundColor: getAttendanceStatus(day.date).color }"
-                          ></div>
-                        </el-tooltip>
+            <section v-if="visibleQuarter" :key="`${selectedYear}-${activeMonthIndex}`" class="quarter" v-loading="isNavigating" aria-label="Monthly attendance">
+              <div class="months-grid">
+                <div v-for="month in visibleQuarter.months" :key="month.name" class="month">
+                  <div class="month-heading">
+                    <h2>{{ month.name }} <span>{{ month.weeks[0].days[4].date.getFullYear() }}</span></h2>
+                    <span class="quarter-badge">{{ visibleQuarter.name }} <span>·</span> {{ selectedYear }}</span>
+                  </div>
+                  <div class="weekday-heading" aria-hidden="true">
+                    <span class="week-column-title">Quarter week</span>
+                    <div class="week-days"><span v-for="name in weekdayNames" :key="name">{{ name }}</span></div>
+                  </div>
+                  <div class="weeks-grid">
+                    <div v-for="week in month.weeks" :key="week.start" class="week" :class="{ 'current-week': isCurrentWeek(week) }">
+                      <div class="week-meta">
+                        <span class="week-label">W{{ week.number }} <span v-if="isCurrentWeek(week)" class="current-week-dot" aria-label="Current week"></span></span>
+                        <span class="week-dates">{{ formatDateRange(week.start, week.days[6].date) }}</span>
+                      </div>
+                      <div class="week-days">
+                        <button
+                          v-for="day in week.days"
+                          :key="day.date"
+                          type="button"
+                          class="day"
+                          :class="{ 'weekend': day.isWeekend, 'today': isToday(day.date), 'other-month': !day.isCurrentMonth, 'future-date': isFutureDate(day.date), 'has-status': !!getAttendanceStatus(day.date).value }"
+                          :style="{ '--status-color': getAttendanceStatus(day.date).color }"
+                          :disabled="day.isWeekend || isFutureDate(day.date) || isNavigating || isTransitioning"
+                          :aria-label="`${day.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}: ${getAttendanceStatus(day.date).label || 'No entry'}`"
+                          :aria-current="isToday(day.date) ? 'date' : undefined"
+                          @click="selectDay(day)"
+                        >
+                          <span class="day-topline"><span class="day-number">{{ day.dayNumber }}</span><span v-if="isToday(day.date)" class="today-label">Today</span></span>
+                          <span class="day-status" :title="getAttendanceStatus(day.date).label">
+                            <span v-if="getAttendanceStatus(day.date).value" class="status-dot" :style="{ backgroundColor: getAttendanceStatus(day.date).color }"></span>
+                            <span class="day-status-label">{{ getAttendanceStatus(day.date).label || (day.isWeekend ? 'Weekend' : isFutureDate(day.date) ? '—' : 'Add entry') }}</span>
+                          </span>
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </section>
           </Transition>
         </div>
       </el-main>
     </el-container>
 
-    <el-dialog v-model="statusDialogVisible" title="Update Attendance" width="300px">
+    <el-dialog v-model="statusDialogVisible" title="Update attendance" width="360px" style="max-width: calc(100vw - 32px); border-radius: 16px; --el-color-primary: #6154d9">
+      <p v-if="selectedDay" class="dialog-date">{{ selectedDay.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}</p>
       <el-select v-model="selectedStatus" placeholder="Select status" style="width: 100%" clearable>
         <el-option
           v-for="status in statusTypes"
@@ -166,13 +146,15 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { createCalendarInputHandlers, monthPages, monthStep } from './services/calendarNavigation'
-import { dateKey as localDateKey, calendarYearForDate, generateFiscalQuarters, numberQuarterWeeks, isFutureDay, isWorkWeekComplete, startDayRefresh } from './services/calendar'
+import { dateKey as localDateKey, calendarYearForDate, generateFiscalQuarters, numberQuarterWeeks, isFutureDay, isCompliantStatus, isWorkWeekComplete, startDayRefresh } from './services/calendar'
 import { ElMessage } from 'element-plus'
-import { Download, Upload, SuccessFilled, CircleCloseFilled, QuestionFilled } from '@element-plus/icons-vue'
+import { Calendar, ArrowLeft, ArrowRight, Download, Upload, SuccessFilled, CircleCloseFilled, QuestionFilled } from '@element-plus/icons-vue'
 import { loadCalendarAttendance, saveCalendarAttendance } from './services/attendanceStorage'
 import { isTauri } from './services/platform'
 import { createAttendanceWorkbook, parseAttendanceWorkbook } from './services/workbook'
 import { exportWorkbook, importWorkbook } from './services/workbookFiles'
+
+const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const statusTypes = [
   { label: 'In-office', value: 'in-office', color: '#67C23A' },
@@ -554,7 +536,7 @@ function getComplianceClass(quarterIndex) {
     return 'compliance-na'
   }
   
-  if (status.includes('Compliant')) {
+  if (isCompliantStatus(status)) {
     return 'compliant'
   }
   
@@ -568,7 +550,7 @@ function getComplianceCardClass(quarterIndex) {
     return 'card-na'
   }
   
-  if (status.includes('Compliant')) {
+  if (isCompliantStatus(status)) {
     return 'card-compliant'
   }
   
@@ -582,7 +564,7 @@ function getComplianceIcon(quarterIndex) {
     return QuestionFilled
   }
   
-  if (status.includes('Compliant')) {
+  if (isCompliantStatus(status)) {
     return SuccessFilled
   }
   
@@ -596,12 +578,14 @@ function getComplianceIconColor(quarterIndex) {
     return '#909399'
   }
   
-  if (status.includes('Compliant')) {
+  if (isCompliantStatus(status)) {
     return '#67c23a'
   }
   
   return '#f56c6c'
 }
+
+selectCurrentMonth()
 
 onMounted(async () => {
   window.addEventListener('keydown', calendarInput.keydown)
@@ -633,9 +617,24 @@ onUnmounted(() => {
 }
 
 .attendance-tracker {
+  --ink: #1a1f36;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --accent: #7c6bf0;
+  --el-color-primary: #7c6bf0;
+  --el-color-primary-light-3: #a69bf6;
+  --el-color-primary-light-5: #c4c5fa;
+  --el-color-primary-light-7: #e0e0ff;
+  --el-color-primary-light-9: #f5f5ff;
+  --el-color-primary-dark-2: #5e4fd0;
+  --el-border-radius-base: 12px;
+  --el-text-color-primary: #1a1f36;
   width: 100%;
   height: 100dvh;
-  background: #f5f7fa;
+  color: var(--ink);
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 50%, #f0f3ff 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .attendance-tracker :deep(*) {
@@ -648,45 +647,82 @@ onUnmounted(() => {
 }
 
 .el-header {
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
   flex-shrink: 0;
-  gap: 10px;
-  height: auto;
-  min-height: 56px;
-  padding: 10px 16px;
-}
-
-.el-header h1 {
-  margin: 0;
-  font-size: 24px;
-  color: #303133;
-}
-
-.header-controls {
-  display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  min-width: 0;
-  max-width: 100%;
+  justify-content: space-between;
+  gap: 12px;
+  height: auto;
+  min-height: 76px;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(124, 107, 240, 0.08);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.header-controls .el-button + .el-button {
+.brand,
+.header-controls,
+.month-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(145deg, #9488f6, #7c6bf0, #6555e0);
+  box-shadow: 0 8px 20px rgba(124, 107, 240, 0.25);
+  font-size: 23px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.8px;
+}
+
+.brand-accent {
+  color: var(--accent);
+}
+
+.brand-subtitle {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.header-controls,
+.month-controls {
+  flex-wrap: wrap;
+  max-width: 100%;
+  gap: 8px;
+}
+
+.el-button {
+  font-weight: 600;
+}
+
+.header-controls .el-button + .el-button,
+.month-controls .el-button + .el-button {
   margin-left: 0;
 }
 
 .el-main {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
   min-height: 0;
-  padding: 12px;
+  padding: 18px 24px;
   overflow: auto;
 }
 
@@ -694,99 +730,148 @@ onUnmounted(() => {
   display: grid;
   flex-shrink: 0;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .compliance-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
-  border-left: 4px solid #dcdfe6;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid rgba(124, 107, 240, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 20px rgba(124, 107, 240, 0.08);
+  transition: all 280ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .compliance-card:hover {
+  border-color: rgba(124, 107, 240, 0.25);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 30px rgba(124, 107, 240, 0.15);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.card-header {
+.card-header,
+.card-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  gap: 6px;
 }
 
 .card-header h3 {
   margin: 0;
-  font-size: 16px;
-  color: #303133;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.card-header h3 span {
+  margin-left: 5px;
+  color: var(--muted);
+  font-weight: 400;
 }
 
 .card-icon {
-  font-size: 24px;
+  color: #8b94a8;
+  font-size: 17px;
 }
 
 .card-value {
-  font-size: 20px;
-  font-weight: bold;
-  color: #606266;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 5px 0 10px;
+  font-size: 29px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
 }
 
-.card-na {
-  border-left-color: #909399;
+.card-value span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
-.card-na .card-value {
-  color: #909399;
+.compliance-pill {
+  padding: 3px 7px;
+  border-radius: 6px;
+  color: #667085;
+  background: #f1f3f7;
+  font-size: 10px;
+  font-weight: 600;
 }
 
-.card-compliant {
-  border-left-color: #67c23a;
-  background: linear-gradient(135deg, #f0f9ff 0%, #fff 100%);
+.card-target {
+  color: var(--muted);
+  font-size: 10px;
 }
 
-.card-compliant .card-value {
-  color: #67c23a;
+.card-compliant .compliance-pill {
+  color: #10b981;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid rgba(16, 185, 129, 0.15);
 }
 
-.card-not-compliant {
-  border-left-color: #f56c6c;
-  background: linear-gradient(135deg, #fef0f0 0%, #fff 100%);
+.card-compliant .card-icon {
+  color: #10b981;
 }
 
-.card-not-compliant .card-value {
-  color: #f56c6c;
+.card-not-compliant .compliance-pill {
+  color: #f97316;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 1px solid rgba(249, 115, 22, 0.15);
+}
+
+.card-not-compliant .card-icon {
+  color: #f97316;
 }
 
 .status-legend {
   display: flex;
   flex-wrap: wrap;
   flex-shrink: 0;
-  gap: 8px 16px;
-  padding: 10px 12px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  align-items: center;
+  gap: 8px 18px;
+  padding: 0 2px;
+}
+
+.legend-title {
+  margin-right: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  color: #535e74;
+  font-size: 11px;
 }
 
 .legend-color {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  border: 1px solid #dcdfe6;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.status-dot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
 }
 
 .quarters-container {
+  --week-column: 140px;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -797,17 +882,35 @@ onUnmounted(() => {
 .calendar-navigation {
   display: flex;
   flex-wrap: wrap;
+  flex-shrink: 0;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
 
-.navigation-hint {
-  color: #606266;
-  font-size: 13px;
+.calendar-title h2 {
+  margin: 0 0 5px;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.2px;
 }
 
-.calendar-navigation .el-button + .el-button {
-  margin-left: 0;
+.navigation-hint {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+kbd {
+  padding: 1px 4px;
+  border: 1px solid #dce0eb;
+  border-radius: 4px;
+  color: #535e74;
+  background: #fff;
+  font: inherit;
+}
+
+.month-select {
+  width: 260px;
 }
 
 .quarter {
@@ -815,18 +918,11 @@ onUnmounted(() => {
   flex: 1;
   flex-direction: column;
   min-width: 0;
-  background: #fff;
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.quarter h2 {
-  margin: 0 0 8px 0;
-  color: #303133;
-  font-size: 20px;
-  border-bottom: 2px solid #409eff;
-  padding-bottom: 10px;
+  padding: 20px;
+  border: 1px solid rgba(124, 107, 240, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 32px rgba(124, 107, 240, 0.06);
 }
 
 .months-grid {
@@ -840,15 +936,67 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border: 1px solid #ebeef5;
-  border-radius: 6px;
-  padding: 8px;
 }
 
-.month h3 {
-  margin: 0 0 8px 0;
-  color: #606266;
-  font-size: 16px;
+.month-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.month-heading h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: -0.6px;
+}
+
+.month-heading h2 span {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.quarter-badge {
+  padding: 6px 11px;
+  border: 1px solid rgba(124, 107, 240, 0.2);
+  border-radius: 9px;
+  color: #7c6bf0;
+  background: linear-gradient(135deg, #f5f3ff 0%, #e8e4ff 100%);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.quarter-badge span {
+  padding: 0 3px;
+  color: #a59cce;
+}
+
+.weekday-heading,
+.week {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: var(--week-column) minmax(0, 1fr);
+  gap: 12px;
+  padding: 0 10px;
+}
+
+.weekday-heading {
+  align-items: center;
+  margin-bottom: 6px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.weekday-heading .week-days span {
   text-align: center;
 }
 
@@ -860,93 +1008,174 @@ onUnmounted(() => {
 }
 
 .week {
-  display: grid;
   flex: 1 0 auto;
-  min-width: 0;
-  grid-template-columns: 45px 130px minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  padding: 4px 8px;
-  transition: all 0.3s;
+  align-items: stretch;
+  min-height: 62px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border: 1px solid rgba(124, 107, 240, 0.06);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  transition: all 240ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .week:hover {
-  border-color: #409eff;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
+  border-color: rgba(124, 107, 240, 0.2);
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateX(3px);
 }
 
 .week.current-week {
-  border-color: #67c23a;
-  background: #f0f9ff;
+  border-color: rgba(124, 107, 240, 0.25);
+  background: linear-gradient(135deg, rgba(124, 107, 240, 0.04) 0%, rgba(124, 107, 240, 0.02) 100%);
+  box-shadow: 0 0 0 1px rgba(124, 107, 240, 0.08);
+}
+
+.week-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
 }
 
 .week-label {
-  font-weight: bold;
-  color: #409eff;
-  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #4e5870;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.current-week .week-label {
+  color: var(--accent);
+}
+
+.current-week-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .week-dates {
-  font-size: 12px;
-  color: #909399;
-  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 10px;
 }
 
 .week-days {
   display: grid;
   min-width: 0;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: 5px;
 }
 
 .day {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-width: 0;
-  padding: 2px;
-  border: 2px solid transparent;
-  border-radius: 4px;
+  padding: 8px 9px;
+  border: 1px solid rgba(124, 107, 240, 0.06);
+  border-radius: 9px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.7);
+  text-align: left;
+  font: inherit;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.day:hover:not(.weekend) {
-  background: #ecf5ff;
+.day:not(:disabled):hover {
+  border-color: rgba(124, 107, 240, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 107, 240, 0.1);
+}
+
+.day:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.day.has-status {
+  background: var(--status-color);
+  border-color: var(--status-color);
+  color: #fff;
 }
 
 .day.weekend {
-  opacity: 0.5;
-  cursor: not-allowed;
+  color: #94a3b8;
+  background: rgba(248, 250, 252, 0.7);
+  border-color: rgba(148, 163, 184, 0.08);
 }
 
-.day.other-month {
-  opacity: 0.6;
+.day:disabled {
+  cursor: default;
 }
 
-.day.future-date {
-  opacity: 0.4;
-  cursor: not-allowed;
+.day.other-month .day-number {
+  color: #94a3b8;
+}
+
+.day.future-date .day-status {
+  color: #94a3b8;
 }
 
 .day.today {
-  border: 2px solid #409eff;
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(124, 107, 240, 0.06) 0%, rgba(124, 107, 240, 0.03) 100%);
+  box-shadow: 0 0 0 1px rgba(124, 107, 240, 0.12), 0 2px 8px rgba(124, 107, 240, 0.15);
+}
+
+.day.today.has-status {
+  background: var(--status-color);
+  border-color: var(--status-color);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.day-topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
 }
 
 .day-number {
-  font-size: 12px;
-  color: #606266;
-  margin-bottom: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+}
+
+.today-label {
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 .day-status {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 1px solid #dcdfe6;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.day.has-status .day-status {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.day-status-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .status-option {
@@ -956,100 +1185,167 @@ onUnmounted(() => {
 }
 
 .status-color {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  border: 1px solid #dcdfe6;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 }
+
+.dialog-date {
+  margin: 0 0 18px;
+  color: #69738a;
+  font-size: 13px;
+}
+
 .month-next-enter-active,
 .month-previous-enter-active {
-  transition: transform 240ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 240ms ease;
+  transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 280ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .month-next-leave-active,
 .month-previous-leave-active {
-  transition: transform 160ms ease-in, opacity 160ms ease-in;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.6, 1), opacity 160ms cubic-bezier(0.4, 0, 0.6, 1);
   pointer-events: none;
 }
 
 .month-next-enter-from,
 .month-previous-leave-to {
-  transform: translateY(24px);
+  transform: translateY(32px);
   opacity: 0;
 }
 
 .month-next-leave-to,
 .month-previous-enter-from {
-  transform: translateY(-24px);
+  transform: translateY(-32px);
   opacity: 0;
+}
+
+@media (max-width: 850px) {
+  .el-header {
+    padding: 12px 16px;
+  }
+
+  .el-main {
+    padding: 14px;
+  }
+
+  .quarters-container {
+    --week-column: 105px;
+  }
+
+  .card-target {
+    display: none;
+  }
+
+  .compliance-card {
+    padding: 12px;
+  }
+
+  .day {
+    padding: 6px 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  .compliance-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .quarters-container {
+    --week-column: 40px;
+  }
+
+  .quarter {
+    padding: 10px;
+  }
+
+  .month-select {
+    width: 205px;
+  }
+
+  .month-controls {
+    gap: 5px;
+  }
+
+  .week,
+  .weekday-heading {
+    padding-left: 4px;
+    padding-right: 4px;
+    gap: 4px;
+  }
+
+  .week-column-title,
+  .week-dates,
+  .day.weekend .day-status-label {
+    display: none;
+  }
+
+  .week-days {
+    gap: 2px;
+  }
+
+  .day {
+    padding: 6px 2px;
+  }
+
+  .today-label {
+    font-size: 8px;
+  }
+}
+
+@media (max-height: 750px) {
+  .el-header {
+    min-height: 62px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .el-main {
+    gap: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .compliance-card {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .card-value {
+    margin: 2px 0 6px;
+    font-size: 25px;
+  }
+
+  .quarter {
+    padding: 12px;
+  }
+
+  .month-heading {
+    margin-bottom: 6px;
+  }
+
+  .day {
+    gap: 4px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .week {
+    min-height: 52px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .month-next-enter-active,
   .month-next-leave-active,
   .month-previous-enter-active,
-  .month-previous-leave-active {
-    transition-duration: 1ms;
-  }
-}
-
-@media (max-width: 700px) {
-  .compliance-cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .week {
-    grid-template-columns: 45px minmax(0, 1fr);
-    gap: 4px;
-  }
-
-  .week-dates {
-    text-align: right;
-    margin: 0;
-  }
-
-  .week-days {
-    grid-column: 1 / -1;
-  }
-
-  .card-value {
-    font-size: 16px;
-  }
-}
-
-@media (max-height: 750px) {
-  .el-main {
-    gap: 8px;
-    padding: 8px;
-  }
-
+  .month-previous-leave-active,
+  .day,
+  .week,
   .compliance-card {
-    padding: 8px 10px;
-  }
-
-  .card-header {
-    margin-bottom: 4px;
-  }
-
-  .card-value {
-    font-size: 17px;
-  }
-
-  .status-legend {
-    padding: 6px 10px;
-  }
-
-  .quarters-container {
-    gap: 8px;
-  }
-
-  .quarter {
-    padding: 8px;
-  }
-
-  .navigation-hint {
-    font-size: 12px;
+    transition-duration: 1ms;
   }
 }
 </style>

@@ -59,6 +59,10 @@ export function isFutureDay(date, now) {
   return dateKey(date) > dateKey(now)
 }
 
+export function isCompliantStatus(status) {
+  return status.endsWith('(Compliant)')
+}
+
 export function isWorkWeekComplete(week, now) {
   const completedAt = new Date(week.start)
   completedAt.setDate(completedAt.getDate() + 6)
