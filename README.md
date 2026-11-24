@@ -2,9 +2,7 @@
 
 A modern attendance tracking application with an intuitive quarterly view. Mark your daily status, monitor compliance, and export data to Excel—available as a native macOS desktop app or as a web application.
 
-<img src="docs/screenshots/dashboard-2026.png" alt="Attendance Tracker Dashboard" style="border: 2px solid #e0e0e0; border-radius: 8px; margin: 20px 0; max-width: 100%;">
-
-<img src="docs/screenshots/compliance-cards.png" alt="Compliance Cards" style="border: 2px solid #e0e0e0; border-radius: 8px; margin: 20px 0; max-width: 100%;">
+<img src="docs/screenshots/dashboard.png" alt="Attendance Tracker Dashboard" style="border: 2px solid #e0e0e0; border-radius: 8px; margin: 20px 0; max-width: 100%;">
 
 ## Features
 
