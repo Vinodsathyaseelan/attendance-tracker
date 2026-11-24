@@ -8,7 +8,7 @@ A modern attendance tracking application with an intuitive quarterly view. Mark 
 
 - **Quarterly View**: Visualize attendance across all four quarters of the year
 - **Daily Tracking**: Mark attendance status for each individual day
-- **Multiple Status Types**: Track In-office, WFH, PTO, Sick Leave, Other Leave, and Flexible Time Off
+- **Multiple Status Types**: Track In-office, WFH, PTO, Sick Leave, Other Leave, Flexible Time Off, and Holiday
 - **Compliance Tracking**: Monitor quarterly compliance with average in-office days per week
 - **Card-Based Compliance Display**: Visual cards for each quarter with status indicators
 - **Date Restrictions**: Future dates and weekends are disabled for attendance entry
@@ -237,6 +237,7 @@ Use the year dropdown in the header to switch between different years. Each year
 | Sick Leave | Red | Sick leave |
 | Other Leave | Gray | Other types of leave |
 | Flexible Time Off | Purple | Flexible time off |
+| Holiday | Pink | Public holiday (counts as in-office for compliance) |
 
 ## Project Structure
 

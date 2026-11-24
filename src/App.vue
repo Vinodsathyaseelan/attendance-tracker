@@ -162,7 +162,8 @@ const statusTypes = [
   { label: 'PTO', value: 'pto', color: '#E6A23C' },
   { label: 'Sick Leave', value: 'sick', color: '#F56C6C' },
   { label: 'Other Leave', value: 'other-leave', color: '#909399' },
-  { label: 'Flexible Time Off', value: 'flexible', color: '#9b59b6' }
+  { label: 'Flexible Time Off', value: 'flexible', color: '#9b59b6' },
+  { label: 'Holiday', value: 'holiday', color: '#E91E63' }
 ]
 
 const today = ref(new Date())
@@ -502,7 +503,7 @@ function getComplianceStatus(quarterIndex) {
         if (status) {
           hasAnyEntry = true
           weekHasEntry = true
-          if (status === 'in-office') {
+          if (status === 'in-office' || status === 'holiday') {
             weekInOfficeDays++
           }
         }
