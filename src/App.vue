@@ -313,7 +313,7 @@ function isFutureDate(date) {
 function getAttendanceStatus(date) {
   const dateKey = localDateKey(date)
   const status = attendanceData.value[dateKey]
-  return statusTypes.find(s => s.value === status) || { color: '#f5f5f5', label: '', value: '' }
+  return statusTypes.find(s => s.value === status) || { color: '', label: '', value: '' }
 }
 
 function selectDay(day) {
@@ -1101,8 +1101,14 @@ kbd {
 }
 
 .day.has-status {
-  background: var(--status-color);
-  border-color: var(--status-color);
+  background: var(--status-color, transparent);
+  border-color: var(--status-color, transparent);
+  color: #fff;
+}
+
+.day.has-status:not(:disabled):hover {
+  background: var(--status-color, transparent);
+  border-color: var(--status-color, transparent);
   color: #fff;
 }
 
@@ -1131,8 +1137,14 @@ kbd {
 }
 
 .day.today.has-status {
-  background: var(--status-color);
-  border-color: var(--status-color);
+  background: var(--status-color, transparent);
+  border-color: var(--status-color, transparent);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.day.today.has-status:not(:disabled):hover {
+  background: var(--status-color, transparent);
+  border-color: var(--status-color, transparent);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
